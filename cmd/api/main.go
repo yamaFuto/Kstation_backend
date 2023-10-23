@@ -25,21 +25,16 @@ type application struct {
 }
 
 func main() {
-	//set application config
 	var app application
 
-	//read from command line
-	//make a flag
 	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5432 user=postgres password=postgres dbname=kstation sslmode=disable timezone=UTC connect_timeout=5", "Postgres connecion string")
 	flag.StringVar(&app.JWTSecret, "jwt-secret", "verysecret", "signing secret")
 	flag.StringVar(&app.JWTIssuer, "jwt-issuer", "example.com", "signing issuer")
 	flag.StringVar(&app.JWTAudience, "jwt-audience", "example.com", "signing audience")
 	flag.StringVar(&app.CookieDomain, "cookie-domain", "localhost", "signing secret")
 	flag.StringVar(&app.JWTSecret,"domain", "jwt-secret", "domain")
-	//read flags
 	flag.Parse()
 
-	//connect to the database
 	conn, err := app.connectToDB()
 	if err != nil {
 		log.Fatal(err)
@@ -60,11 +55,7 @@ func main() {
 	}
 
 	log.Println("Starting application on port", port)
-	// //ListenAndServeのだいにひきすう（route設定)がdefaultの場合
-	// http.HandleFunc("/", Hello)
-
-	//star a web server
-	//第二引数はrouterの設定
+	
 	err = http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
 	if err != nil {
 		log.Fatal(err)

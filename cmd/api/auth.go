@@ -106,21 +106,17 @@ func (j *Auth) GetExpiredRefreshCookie() *http.Cookie {
 func (j *Auth) GetTokenFromHeaderAndVerify(w http.ResponseWriter, r *http.Request) (string, *Claims, error) {
 	w.Header().Add("Vary", "Authorization")
 
-	//get auth header
 	authHeader := r.Header.Get("Authorization")
 
-	//sanity check
 	if authHeader == "" {
 		return "", nil, errors.New("no auth header")
 	}
 
-	//split the header on space
 	headerParts := strings.Split(authHeader, " ")
 	if len(headerParts) != 2 {
 		return "", nil, errors.New("invalid auth header")
 	}
 
-	//check to see if we have the word Bearer
 	if headerParts[0] != "Bearer" {
 		return "", nil, errors.New("invalid auth header")
 	}
@@ -128,10 +124,8 @@ func (j *Auth) GetTokenFromHeaderAndVerify(w http.ResponseWriter, r *http.Reques
 
 	token := headerParts[1]
 
-	//declare an empty claims
 	claims := &Claims{}
 
-	//parse the token
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])

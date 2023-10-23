@@ -8,7 +8,6 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-	// create a router mux
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)

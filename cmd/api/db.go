@@ -9,7 +9,6 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-//関数を二つに分けた理由→openDBを複数作ることによって複数のデータベースを起動させるようにするため
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err!= nil {

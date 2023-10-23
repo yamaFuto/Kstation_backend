@@ -20,7 +20,6 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data interf
 	}
 
 	if len(headers) > 0 {
-		//引数でなくてもいいようにspliteを書いているから、[0]をつける必要がある
 		for key, value := range headers[0] {
 			w.Header()[key] = value
 		}

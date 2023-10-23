@@ -9,7 +9,6 @@ type DatabaseRepo interface {
 	Connection() *sql.DB
 	InsertUser(user models.User) (int, error)
 	UpdateUser(u models.User) error
-	GetUser(id int) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
 	GetUserByID(id int) (*models.User, error)
 }

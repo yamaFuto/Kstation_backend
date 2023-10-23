@@ -49,7 +49,7 @@ func (m *PostgresDBRepo) InsertUser(user models.User) (int, error) {
 	return newID, nil
 }
 
-func (m *PostgresDBRepo) GetUser(id int) (*models.User, error) {
+func (m *PostgresDBRepo) GetUserByID(id int) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -135,33 +135,6 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 		&user.UpdatedAt,
 	)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (m *PostgresDBRepo) GetUserByID(id int) (*models.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
-	defer cancel()
-
-	query := `select id, email, first_name, last_name, password, image,
-					created_at, updated_at from users where id = $1`
-
-	var user models.User
-	row := m.DB.QueryRowContext(ctx, query, id)
-
-	err := row.Scan(
-		&user.ID,
-		&user.Email,
-		&user.FirstName,
-		&user.LastName,
-		&user.Password,
-		&user.Image,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
 	if err != nil {
 		return nil, err
 	}
