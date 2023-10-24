@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"kstation_backend/internal/models"
+	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -140,4 +141,65 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (m *PostgresDBRepo) InsertLesson(lesson models.Lesson) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	var newID int
+	stmt := `insert into lessons (lesson_name, teacher_name, avg_star, comment_numbers, created_at, updated_at)
+		values ($1, $2, $3, $4, $5, $6) returning id`
+
+	err := m.DB.QueryRowContext(ctx, stmt,
+		lesson.LessonName,
+		lesson.TeacherName,
+		lesson.AvgStar,
+		lesson.CommentNumbers,
+		time.Now(),
+		time.Now(),
+	).Scan(&newID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return newID, nil
+}
+
+func (m *PostgresDBRepo) AllLessons() ([]*models.Lesson, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `select id, lesson_name, teacher_name, avg_star, comment_numbers, created_at, updated_at
+	from lessons order by lesson_name`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lessons []*models.Lesson
+
+	for rows.Next() {
+		var lesson models.Lesson
+		err := rows.Scan(
+			&lesson.ID,
+			&lesson.LessonName,
+			&lesson.TeacherName,
+			&lesson.AvgStar,
+			&lesson.CommentNumbers,
+			&lesson.CreatedAt,
+			&lesson.UpdatedAt,
+		)
+		if err != nil {
+			log.Println("Error scanning", err)
+			return nil, err
+		}
+
+		lessons = append(lessons, &lesson)
+	}
+
+	return lessons, nil
 }

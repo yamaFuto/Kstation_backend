@@ -6,7 +6,7 @@ type Comment struct {
 	ID           int       `json:"id"`
 	LessonId     int       `json:"lesson_id"`
 	UserId       int       `json:"user_id"`
-	Year         string    `json:"year"`
+	Year         int       `json:"year"`
 	Term         string    `json:"Term"`
 	Comment      string    `json:"comment"`
 	TestOrReport string    `json:"test_or_report"`

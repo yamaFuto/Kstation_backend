@@ -177,3 +177,55 @@ func TestPostgresDBRepoUpdateUser(t *testing.T) {
 		t.Errorf("expected updated record to have first name Jane and email jane@smith.com, but get %s %s", user.FirstName, user.Email)
 	}
 }
+
+func TestPostgresDBRepoInsertLesson(t *testing.T) {
+	testLesson := models.Lesson{
+		LessonName: "Math",
+		TeacherName: "User",
+		AvgStar: 0.0,
+		CommentNumbers: 0,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	id, err := testRepo.InsertLesson(testLesson)
+	if err != nil {
+		t.Errorf("insert lesson returned an error %s", err)
+	}
+
+	if id !=1 {
+		t.Errorf("insert lesson returned wrong id; expected 1, but got %d", id)
+	}
+
+}
+
+func TestPostgresDBRepoAllLessons(t *testing.T) {
+	users, err := testRepo.AllLessons()
+	if err != nil {
+		t.Errorf("all lessons reports an error: %s", err)
+	}
+
+	if len(users) != 1 {
+		t.Errorf("all lessons reports wrong size; expected 1, but got %d", len(users))
+	}
+
+	testLesson := models.Lesson{
+		LessonName: "English",
+		TeacherName: "Smith",
+		AvgStar: 0,
+		CommentNumbers: 0,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertLesson(testLesson)
+
+	users, err = testRepo.AllLessons()
+	if err != nil {
+		t.Errorf("all lessons reports an error: %s", err)
+	}
+
+	if len(users) != 2 {
+		t.Errorf("all lessons reports wrong size after insert; expected 2, but got %d", len(users))
+	}
+}
