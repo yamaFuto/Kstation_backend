@@ -135,7 +135,7 @@ func TestPostgresDBRepoInsertUser(t *testing.T) {
 
 }
 
-func TestPostgresDBRepoGetUser(t *testing.T) {
+func TestPostgresDBRepoGetUserById(t *testing.T) {
 	user, err := testRepo.GetUserByID(1)
 	if err != nil {
 		t.Errorf("error getting user by id: %s", err)
@@ -199,6 +199,38 @@ func TestPostgresDBRepoInsertLesson(t *testing.T) {
 
 }
 
+func TestPostgresDBRepoGetLessonById(t *testing.T) {
+	lesson, err := testRepo.GetLessonByID(1)
+	if err != nil {
+		t.Errorf("error getting lesson by id: %s", err)
+	}
+
+	if lesson.LessonName != "Math" {
+		t.Errorf("wrong email returned by GetUser: expected admin@example.com but got %s", lesson.LessonName)
+	}
+
+	_, err = testRepo.GetLessonByID(3)
+	if err == nil {
+		t.Errorf("no error reported when gettig non existent user by id")
+	}
+}
+
+func TestPostgresDBRepoUpdateLesson(t *testing.T) {
+	lesson, _ := testRepo.GetLessonByID(1)
+	lesson.AvgStar = 1.5
+	lesson.CommentNumbers++
+
+	err := testRepo.UpdateLesson(*lesson)
+	if err != nil {
+		t.Errorf("error updating lesson %d: %s", 2, err)
+	}
+
+	lesson, _= testRepo.GetLessonByID(1)
+	if lesson.AvgStar != 1.5 || lesson.CommentNumbers != 1 || lesson.LessonName != "Math" {
+		t.Errorf("expected updated record to have average star 1.5 and comment numbers 2, but get %f %d", lesson.AvgStar, lesson.CommentNumbers)
+	}
+}
+
 func TestPostgresDBRepoAllLessons(t *testing.T) {
 	users, err := testRepo.AllLessons()
 	if err != nil {
@@ -227,5 +259,155 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 
 	if len(users) != 2 {
 		t.Errorf("all lessons reports wrong size after insert; expected 2, but got %d", len(users))
+	}
+}
+
+func TestPostgresDBRepoInsertComment(t *testing.T) {
+	testComment := models.Comment{
+		LessonId: 1,
+		UserId: 1,
+		Year: 2023,
+		Term: "test",
+		Comment: "this is a test",
+		TestOrReport: "Report",
+		Star: 3,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	id, err := testRepo.InsertComment(testComment)
+	if err != nil {
+		t.Errorf("insert comment returned an error %s", err)
+	}
+
+	if id !=1 {
+		t.Errorf("insert comment returned wrong id; expected 1, but got %d", id)
+	}
+
+}
+
+func TestPostgresDBRepoGetCommentById(t *testing.T) {
+	comment, err := testRepo.GetCommentByID(1)
+	if err != nil {
+		t.Errorf("error getting user by id: %s", err)
+	}
+
+	if comment.Comment != "this is a test" {
+		t.Errorf("wrong comment returned by GetUser: expected this is a test but got %s", comment.Comment)
+	}
+
+	_, err = testRepo.GetCommentByID(3)
+	if err == nil {
+		t.Errorf("no error reported when gettig non existent comment by id")
+	}
+}
+
+func TestPostgresDBRepoAllCommentsByLessonId(t *testing.T) {
+
+	users, err := testRepo.AllCommentsByLessonId(1)
+	if err != nil {
+		t.Errorf("all comments reports an error: %s", err)
+	}
+
+	if len(users) != 1 {
+		t.Errorf("all comments reports wrong size; expected 1, but got %d", len(users))
+	}
+
+	testComment := models.Comment{
+		LessonId: 2,
+		UserId: 1,
+		Year: 2023,
+		Term: "test2",
+		Comment: "this is a test",
+		TestOrReport: "Test",
+		Star: 4,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertComment(testComment)
+
+	users, err = testRepo.AllCommentsByLessonId(2)
+	if err != nil {
+		t.Errorf("all comments reports an error: %s", err)
+	}
+
+	if len(users) != 1 {
+		t.Errorf("all comments reports wrong size after insert; expected 2, but got %d", len(users))
+	}
+}
+
+func TestPostgresDBRepoAllCommentsByUserId(t *testing.T) {
+
+	comments, err := testRepo.AllCommentsByUserId(1)
+	if err != nil {
+		t.Errorf("all comments reports an error: %s", err)
+	}
+
+	if len(comments) != 2 {
+		t.Errorf("all comments reports wrong size; expected 2, but got %d", len(comments))
+	}
+
+	testUser := models.User{
+		FirstName: "Yamada",
+		LastName: "Taro",
+		Email: "Futo@example.com",
+		Password: "secret",
+		Image: "test2",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertUser(testUser)
+
+	testComment := models.Comment{
+		LessonId: 2,
+		UserId: 2,
+		Year: 2023,
+		Term: "test2",
+		Comment: "this is a test",
+		TestOrReport: "Test",
+		Star: 4,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertComment(testComment)
+
+	comments, err = testRepo.AllCommentsByUserId(2)
+	if err != nil {
+		t.Errorf("all comments reports an error: %s", err)
+	}
+
+	if len(comments) != 1 {
+		t.Errorf("all comments reports wrong size after insert; expected 1, but got %d", len(comments))
+	}
+}
+
+func TestPostgresDBRepoUpdateComment(t *testing.T) {
+	comment, _ := testRepo.GetCommentByID(1)
+	comment.Year = 2020
+	comment.Comment = "Test succeeded"
+
+	err := testRepo.UpdateComment(*comment)
+	if err != nil {
+		t.Errorf("error updating lesson %d: %s", 2, err)
+	}
+
+	comment, _= testRepo.GetCommentByID(1)
+	if comment.Year != 2020 || comment.Comment != "Test succeeded" || comment.Star != 3 {
+		t.Errorf("expected updated record to have Year 2020 and comment Test is succeeded, but get %d %s", comment.Year, comment.Comment)
+	}
+}
+
+func TestPostgresDBRepoDeleteUser(t *testing.T) {
+	err := testRepo.DeleteComment(2)
+	if err != nil{
+		t.Errorf("error deleting comment id 2: %s", err)
+	}
+
+	_, err = testRepo.GetCommentByID(2)
+	if err == nil {
+		t.Error("retrieved user id 2, who should have been deleted")
 	}
 }
