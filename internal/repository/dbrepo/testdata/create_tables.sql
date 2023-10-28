@@ -10,6 +10,7 @@ CREATE TABLE public.users (
     email character varying(255),
     password character varying(255),
     image character varying(255),
+    is_admin integer,
     created_at timestamp without time zone,
     updated_at timestamp without time zone
 );

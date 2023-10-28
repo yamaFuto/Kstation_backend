@@ -21,7 +21,6 @@ type application struct {
 	JWTIssuer string
 	JWTAudience string
 	CookieDomain string
-	APIKey string
 }
 
 func main() {
@@ -55,7 +54,7 @@ func main() {
 	}
 
 	log.Println("Starting application on port", port)
-	
+
 	err = http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
 	if err != nil {
 		log.Fatal(err)

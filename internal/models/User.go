@@ -14,6 +14,7 @@ type User struct {
 	LastName  string    `json:"last_name"`
 	FirstName string    `json:"first_name"`
 	Image     string    `json:"image"`
+	IsAdmin   int       `json:"is_admin"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
@@ -22,11 +23,11 @@ func (u *User) PasswordMatches(plainText string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plainText))
 	if err != nil {
 		switch {
-			case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-					//invalid password
-					return false, nil
-			default:
-					return false, err
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			//invalid password
+			return false, nil
+		default:
+			return false, err
 		}
 	}
 

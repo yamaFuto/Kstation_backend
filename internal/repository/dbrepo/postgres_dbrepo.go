@@ -30,8 +30,8 @@ func (m *PostgresDBRepo) InsertUser(user models.User) (int, error) {
 	}
 
 	var newID int
-	stmt := `insert into users (email, first_name, last_name, password, image, created_at, updated_at)
-		values ($1, $2, $3, $4, $5, $6, $7) returning id`
+	stmt := `insert into users (email, first_name, last_name, password, image, is_admin, created_at, updated_at)
+		values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`
 
 	err = m.DB.QueryRowContext(ctx, stmt,
 		user.Email,
@@ -39,6 +39,7 @@ func (m *PostgresDBRepo) InsertUser(user models.User) (int, error) {
 		user.LastName,
 		user.Image,
 		hashedPassword,
+		user.IsAdmin,
 		time.Now(),
 		time.Now(),
 	).Scan(&newID)
@@ -56,7 +57,7 @@ func (m *PostgresDBRepo) GetUserByID(id int) (*models.User, error) {
 
 	query := `
 		select
-			id, email, first_name, last_name, password, image, created_at, updated_at
+			id, email, first_name, last_name, password, image, is_admin, created_at, updated_at
 		from users
 		where
 		    id = $1`
@@ -71,6 +72,7 @@ func (m *PostgresDBRepo) GetUserByID(id int) (*models.User, error) {
 		&user.LastName,
 		&user.Password,
 		&user.Image,
+		&user.IsAdmin,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -91,8 +93,9 @@ func (m *PostgresDBRepo) UpdateUser(u models.User) error {
 		first_name = $2,
 		last_name = $3,
 		image = $4,
-		updated_at = $5
-		where id = $6
+		is_admin = $5,
+		updated_at = $6
+		where id = $7
 	`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
@@ -100,6 +103,7 @@ func (m *PostgresDBRepo) UpdateUser(u models.User) error {
 		u.FirstName,
 		u.LastName,
 		u.Image,
+		u.IsAdmin,
 		time.Now(),
 		u.ID,
 	)
@@ -117,7 +121,7 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 
 	query := `
 		select
-			id, email, first_name, last_name, password, image, created_at, updated_at
+			id, email, first_name, last_name, password, image, is_admin, created_at, updated_at
 		from users
 		where
 		    email = $1`
@@ -132,6 +136,7 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 		&user.LastName,
 		&user.Password,
 		&user.Image,
+		&user.IsAdmin,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -141,6 +146,24 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (m *PostgresDBRepo) ResetPassword(id int, password string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return err
+	}
+
+	stmt := `update users set password = $1 where id = $2`
+	_, err = m.DB.ExecContext(ctx, stmt, hashedPassword, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *PostgresDBRepo) InsertLesson(lesson models.Lesson) (int, error) {

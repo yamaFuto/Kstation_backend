@@ -120,6 +120,7 @@ func TestPostgresDBRepoInsertUser(t *testing.T) {
 		Email: "admin@example.com",
 		Password: "secret",
 		Image: "test",
+		IsAdmin: 1,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -173,8 +174,25 @@ func TestPostgresDBRepoUpdateUser(t *testing.T) {
 	}
 
 	user, _= testRepo.GetUserByID(1)
-	if user.FirstName != "Jane" || user.Email != "jane@smith.com" {
+	if user.FirstName != "Jane" || user.Email != "jane@smith.com" || user.IsAdmin != 1 {
 		t.Errorf("expected updated record to have first name Jane and email jane@smith.com, but get %s %s", user.FirstName, user.Email)
+	}
+}
+
+func TestPostgresDBRepoResetPassword(t *testing.T) {
+	err := testRepo.ResetPassword(1, "password")
+	if err != nil {
+		t.Error("error resetting user's a password", err)
+	}
+
+	user, _ := testRepo.GetUserByID(1)
+	matches, err := user.PasswordMatches("password")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !matches {
+		t.Errorf("password should match 'password', but does not")
 	}
 }
 
@@ -206,12 +224,12 @@ func TestPostgresDBRepoGetLessonById(t *testing.T) {
 	}
 
 	if lesson.LessonName != "Math" {
-		t.Errorf("wrong email returned by GetUser: expected admin@example.com but got %s", lesson.LessonName)
+		t.Errorf("wrong lessonName returned by GetLessnoByID: expected Math but got %s", lesson.LessonName)
 	}
 
 	_, err = testRepo.GetLessonByID(3)
 	if err == nil {
-		t.Errorf("no error reported when gettig non existent user by id")
+		t.Errorf("no error reported when gettig non existent lesson by id")
 	}
 }
 
@@ -222,7 +240,7 @@ func TestPostgresDBRepoUpdateLesson(t *testing.T) {
 
 	err := testRepo.UpdateLesson(*lesson)
 	if err != nil {
-		t.Errorf("error updating lesson %d: %s", 2, err)
+		t.Errorf("error updating lesson %d: %s",  1, err)
 	}
 
 	lesson, _= testRepo.GetLessonByID(1)
@@ -232,19 +250,19 @@ func TestPostgresDBRepoUpdateLesson(t *testing.T) {
 }
 
 func TestPostgresDBRepoAllLessons(t *testing.T) {
-	users, err := testRepo.AllLessons()
+	lessons, err := testRepo.AllLessons()
 	if err != nil {
 		t.Errorf("all lessons reports an error: %s", err)
 	}
 
-	if len(users) != 1 {
-		t.Errorf("all lessons reports wrong size; expected 1, but got %d", len(users))
+	if len(lessons) != 1 {
+		t.Errorf("all lessons reports wrong size; expected 1, but got %d", len(lessons))
 	}
 
 	testLesson := models.Lesson{
 		LessonName: "English",
 		TeacherName: "Smith",
-		AvgStar: 0,
+		AvgStar: 0.0,
 		CommentNumbers: 0,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -252,13 +270,13 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 
 	_, _ = testRepo.InsertLesson(testLesson)
 
-	users, err = testRepo.AllLessons()
+	lessons, err = testRepo.AllLessons()
 	if err != nil {
 		t.Errorf("all lessons reports an error: %s", err)
 	}
 
-	if len(users) != 2 {
-		t.Errorf("all lessons reports wrong size after insert; expected 2, but got %d", len(users))
+	if len(lessons) != 2 {
+		t.Errorf("all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
 	}
 }
 
@@ -304,13 +322,13 @@ func TestPostgresDBRepoGetCommentById(t *testing.T) {
 
 func TestPostgresDBRepoAllCommentsByLessonId(t *testing.T) {
 
-	users, err := testRepo.AllCommentsByLessonId(1)
+	comments, err := testRepo.AllCommentsByLessonId(1)
 	if err != nil {
 		t.Errorf("all comments reports an error: %s", err)
 	}
 
-	if len(users) != 1 {
-		t.Errorf("all comments reports wrong size; expected 1, but got %d", len(users))
+	if len(comments) != 1 {
+		t.Errorf("all comments reports wrong size; expected 1, but got %d", len(comments))
 	}
 
 	testComment := models.Comment{
@@ -327,13 +345,13 @@ func TestPostgresDBRepoAllCommentsByLessonId(t *testing.T) {
 
 	_, _ = testRepo.InsertComment(testComment)
 
-	users, err = testRepo.AllCommentsByLessonId(2)
+	comments, err = testRepo.AllCommentsByLessonId(2)
 	if err != nil {
 		t.Errorf("all comments reports an error: %s", err)
 	}
 
-	if len(users) != 1 {
-		t.Errorf("all comments reports wrong size after insert; expected 2, but got %d", len(users))
+	if len(comments) != 1 {
+		t.Errorf("all comments reports wrong size after insert; expected 2, but got %d", len(comments))
 	}
 }
 
@@ -354,6 +372,7 @@ func TestPostgresDBRepoAllCommentsByUserId(t *testing.T) {
 		Email: "Futo@example.com",
 		Password: "secret",
 		Image: "test2",
+		IsAdmin: 1,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

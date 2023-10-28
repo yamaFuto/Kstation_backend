@@ -11,6 +11,7 @@ type DatabaseRepo interface {
 	UpdateUser(u models.User) error
 	GetUserByEmail(email string) (*models.User, error)
 	GetUserByID(id int) (*models.User, error)
+	ResetPassword(id int, password string) error
 	InsertLesson(lesson models.Lesson) (int, error)
 	UpdateLesson(l models.Lesson) error
 	GetLessonByID(id int) (*models.Lesson, error)
