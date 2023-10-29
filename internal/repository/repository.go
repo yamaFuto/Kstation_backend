@@ -15,7 +15,7 @@ type DatabaseRepo interface {
 	InsertLesson(lesson models.Lesson) (int, error)
 	UpdateLesson(l models.Lesson) error
 	GetLessonByID(id int) (*models.Lesson, error)
-	AllLessons() ([]*models.Lesson, error)
+	AllLessons(how int) ([]*models.Lesson, error)
 	InsertComment(comment models.Comment) (int, error)
 	GetCommentByID(id int) (*models.Comment, error)
 	AllCommentsByLessonId(LessonId int) ([]*models.Comment, error)

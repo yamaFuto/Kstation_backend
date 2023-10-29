@@ -171,13 +171,14 @@ func (m *PostgresDBRepo) InsertLesson(lesson models.Lesson) (int, error) {
 	defer cancel()
 
 	var newID int
-	stmt := `insert into lessons (lesson_name, teacher_name, avg_star, comment_numbers, created_at, updated_at)
-		values ($1, $2, $3, $4, $5, $6) returning id`
+	stmt := `insert into lessons (lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at)
+		values ($1, $2, $3, $4, $5, $6, $7) returning id`
 
 	err := m.DB.QueryRowContext(ctx, stmt,
 		lesson.LessonName,
 		lesson.TeacherName,
 		lesson.AvgStar,
+		lesson.AboutAvgStar,
 		lesson.CommentNumbers,
 		time.Now(),
 		time.Now(),
@@ -196,7 +197,7 @@ func (m *PostgresDBRepo) GetLessonByID(id int) (*models.Lesson, error) {
 
 	query := `
 		select
-			id, lesson_name, teacher_name, avg_star, comment_numbers, created_at, updated_at
+			id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
 		from lessons
 		where
 		    id = $1`
@@ -209,6 +210,7 @@ func (m *PostgresDBRepo) GetLessonByID(id int) (*models.Lesson, error) {
 		&lesson.LessonName,
 		&lesson.TeacherName,
 		&lesson.AvgStar,
+		&lesson.AboutAvgStar,
 		&lesson.CommentNumbers,
 		&lesson.CreatedAt,
 		&lesson.UpdatedAt,
@@ -227,13 +229,15 @@ func (m *PostgresDBRepo) UpdateLesson(l models.Lesson) error {
 
 	stmt := `update lessons set
 		avg_star = $1,
-		comment_numbers = $2,
-		updated_at = $3
-		where id = $4
+		about_avg_star = $2,
+		comment_numbers = $3,
+		updated_at = $4
+		where id = $5
 	`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
 		l.AvgStar,
+		l.AboutAvgStar,
 		l.CommentNumbers,
 		time.Now(),
 		l.ID,
@@ -246,12 +250,26 @@ func (m *PostgresDBRepo) UpdateLesson(l models.Lesson) error {
 	return nil
 }
 
-func (m *PostgresDBRepo) AllLessons() ([]*models.Lesson, error) {
+func (m *PostgresDBRepo) AllLessons(how int) ([]*models.Lesson, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `select id, lesson_name, teacher_name, avg_star, comment_numbers, created_at, updated_at
+	query := `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
 	from lessons order by lesson_name`
+
+	if how == 1 {
+		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
+	from lessons order by created_at`
+	} else if how == 2 {
+		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
+	from lessons order by created_at desc`
+	} else if how == 3 {
+		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
+	from lessons order by about_avg_star desc`
+	} else if how == 0 {
+		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
+	from lessons order by lesson_name`
+	}
 
 	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
@@ -268,6 +286,7 @@ func (m *PostgresDBRepo) AllLessons() ([]*models.Lesson, error) {
 			&lesson.LessonName,
 			&lesson.TeacherName,
 			&lesson.AvgStar,
+			&lesson.AboutAvgStar,
 			&lesson.CommentNumbers,
 			&lesson.CreatedAt,
 			&lesson.UpdatedAt,
@@ -351,7 +370,7 @@ func (m *PostgresDBRepo) AllCommentsByLessonId(LessonId int) ([]*models.Comment,
 	query := `select id, lesson_id, user_id, year, term, comment, test_or_report, star, created_at, updated_at
 						from comments
 						where lesson_id = $1
-						order by id`
+						order by id desc`
 
 	rows, err := m.DB.QueryContext(ctx, query, LessonId)
 	if err != nil {

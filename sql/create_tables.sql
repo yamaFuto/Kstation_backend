@@ -58,6 +58,7 @@ CREATE TABLE public.lessons (
     lesson_name character varying(255),
     teacher_name character varying(255),
     avg_star float,
+    about_avg_star integer,
     comment_Numbers integer,
     created_at timestamp without time zone,
     updated_at timestamp without time zone

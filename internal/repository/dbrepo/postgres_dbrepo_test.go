@@ -3,6 +3,7 @@ package dbrepo
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"kstation_backend/internal/models"
 	"kstation_backend/internal/repository"
 	"log"
@@ -200,7 +201,8 @@ func TestPostgresDBRepoInsertLesson(t *testing.T) {
 	testLesson := models.Lesson{
 		LessonName: "Math",
 		TeacherName: "User",
-		AvgStar: 0.0,
+		AvgStar: 7.0,
+		AboutAvgStar: int(math.Round(7.0)),
 		CommentNumbers: 0,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -236,6 +238,7 @@ func TestPostgresDBRepoGetLessonById(t *testing.T) {
 func TestPostgresDBRepoUpdateLesson(t *testing.T) {
 	lesson, _ := testRepo.GetLessonByID(1)
 	lesson.AvgStar = 1.5
+	lesson.AboutAvgStar = int(math.Round(1.5))
 	lesson.CommentNumbers++
 
 	err := testRepo.UpdateLesson(*lesson)
@@ -250,19 +253,30 @@ func TestPostgresDBRepoUpdateLesson(t *testing.T) {
 }
 
 func TestPostgresDBRepoAllLessons(t *testing.T) {
-	lessons, err := testRepo.AllLessons()
+	lessons, err := testRepo.AllLessons(0)
 	if err != nil {
-		t.Errorf("all lessons reports an error: %s", err)
+		t.Errorf("0 all lessons reports an error: %s", err)
 	}
 
 	if len(lessons) != 1 {
-		t.Errorf("all lessons reports wrong size; expected 1, but got %d", len(lessons))
+		t.Errorf("0 all lessons reports wrong size; expected 1, but got %d", len(lessons))
 	}
 
 	testLesson := models.Lesson{
 		LessonName: "English",
 		TeacherName: "Smith",
-		AvgStar: 0.0,
+		AvgStar: 3.2,
+		AboutAvgStar: int(math.Round(3.0)),
+		CommentNumbers: 0,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	testLesson2 := models.Lesson{
+		LessonName: "Science",
+		TeacherName: "Yamada",
+		AvgStar: 3.8,
+		AboutAvgStar: int(math.Round(4.0)),
 		CommentNumbers: 0,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -270,13 +284,45 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 
 	_, _ = testRepo.InsertLesson(testLesson)
 
-	lessons, err = testRepo.AllLessons()
+	_, _ = testRepo.InsertLesson(testLesson2)
+
+	lessons, err = testRepo.AllLessons(1)
 	if err != nil {
-		t.Errorf("all lessons reports an error: %s", err)
+		t.Errorf("1 all lessons reports an error: %s", err)
 	}
 
-	if len(lessons) != 2 {
-		t.Errorf("all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
+	if len(lessons) != 3 {
+		t.Errorf("1 all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
+	}
+
+	if lessons[0].LessonName != "Math" ||  lessons[1].LessonName != "English" || lessons[2].LessonName != "Science" {
+		t.Errorf("wrong order 1")
+	}
+
+	lessons, err = testRepo.AllLessons(2)
+	if err != nil {
+		t.Errorf("2 all lessons reports an error: %s", err)
+	}
+
+	if len(lessons) != 3 {
+		t.Errorf("2 all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
+	}
+
+	if lessons[0].LessonName != "Science" ||  lessons[1].LessonName != "English" || lessons[2].LessonName != "Math" {
+		t.Errorf("wrong order 2")
+	}
+
+	lessons, err = testRepo.AllLessons(3)
+	if err != nil {
+		t.Errorf("3 all lessons reports an error: %s", err)
+	}
+
+	if len(lessons) != 3 {
+		t.Errorf("3 all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
+	}
+
+	if lessons[0].LessonName != "Science" ||  lessons[1].LessonName != "English" || lessons[2].LessonName != "Math" {
+		t.Errorf("wrong order 3 %s %s %s", lessons[0].LessonName, lessons[1].LessonName, lessons[2].LessonName)
 	}
 }
 

@@ -21,6 +21,10 @@ func (m *TestDBRepo) GetUserByID(id int) (*models.User, error) {
 			FirstName: "Admin",
 			LastName: "User",
 			Email: "admin@example.com",
+			Password: "$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK",
+			IsAdmin: 1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 		return &user, nil
 	}
@@ -81,6 +85,7 @@ func (m *TestDBRepo) GetLessonByID(id int) (*models.Lesson, error) {
 			LessonName: "Math",
 			TeacherName: "Yamada",
 			AvgStar: 0.0,
+			AboutAvgStar: 0,
 			CommentNumbers: 0,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -91,10 +96,12 @@ func (m *TestDBRepo) GetLessonByID(id int) (*models.Lesson, error) {
 	return nil, errors.New("not found")
 }
 
-func (m *TestDBRepo) AllLessons() ([]*models.Lesson, error) {
-	var lessons []*models.Lesson
-
-	return lessons, nil
+func (m *TestDBRepo) AllLessons(how int) ([]*models.Lesson, error) {
+	if how == 0 || how == 1 || how == 2 || how == 3 {
+		var lessons []*models.Lesson
+		return lessons, nil
+	}
+	return nil, errors.New("no such a way")
 }
 
 func (m *TestDBRepo) InsertComment(comment models.Comment) (int, error) {
