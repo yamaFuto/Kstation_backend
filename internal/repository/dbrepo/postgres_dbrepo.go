@@ -386,7 +386,7 @@ func (m *PostgresDBRepo) AllCommentsByLessonId(LessonId int) ([]*models.Comment,
 	return comments, nil
 }
 
-func (m *PostgresDBRepo) AllCommentsByUserId(LessonId int) ([]*models.Comment, error) {
+func (m *PostgresDBRepo) AllCommentsByUserId(UserId int) ([]*models.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -395,7 +395,7 @@ func (m *PostgresDBRepo) AllCommentsByUserId(LessonId int) ([]*models.Comment, e
 						where user_id = $1
 						order by id`
 
-	rows, err := m.DB.QueryContext(ctx, query, LessonId)
+	rows, err := m.DB.QueryContext(ctx, query, UserId)
 	if err != nil {
 		return nil, err
 	}

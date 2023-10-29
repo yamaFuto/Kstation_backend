@@ -141,7 +141,7 @@ func (j *Auth) GetTokenFromHeaderAndVerify(w http.ResponseWriter, r *http.Reques
 	}
 
 	if claims.Issuer != j.Issuer {
-		return "", nil, errors.New("invalid issuer")
+		return "", nil, errors.New("incorrect issuer")
 	}
 
 	return token, claims, nil

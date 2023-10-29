@@ -19,7 +19,7 @@ type DatabaseRepo interface {
 	InsertComment(comment models.Comment) (int, error)
 	GetCommentByID(id int) (*models.Comment, error)
 	AllCommentsByLessonId(LessonId int) ([]*models.Comment, error)
-	AllCommentsByUserId(LessonId int) ([]*models.Comment, error)
+	AllCommentsByUserId(UserId int) ([]*models.Comment, error)
 	UpdateComment(c models.Comment) error
 	DeleteComment(id int) error
 }
