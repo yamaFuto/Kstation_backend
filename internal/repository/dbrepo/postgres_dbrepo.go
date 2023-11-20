@@ -3,6 +3,7 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"kstation_backend/internal/models"
 	"log"
 	"time"
@@ -255,20 +256,16 @@ func (m *PostgresDBRepo) AllLessons(how int) ([]*models.Lesson, error) {
 	defer cancel()
 
 	query := `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
-	from lessons order by lesson_name`
+	from lessons order by %s`
 
 	if how == 1 {
-		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
-	from lessons order by created_at`
+		query = fmt.Sprintf(query, "created_at")
 	} else if how == 2 {
-		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
-	from lessons order by created_at desc`
+		query = fmt.Sprintf(query, "created_at desc")
 	} else if how == 3 {
-		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
-	from lessons order by about_avg_star desc`
+		query = fmt.Sprintf(query, "about_avg_star desc")
 	} else if how == 0 {
-		query = `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
-	from lessons order by lesson_name`
+		query = fmt.Sprintf(query, "lesson_name")
 	}
 
 	rows, err := m.DB.QueryContext(ctx, query)

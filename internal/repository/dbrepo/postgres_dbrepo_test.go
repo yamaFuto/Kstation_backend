@@ -265,8 +265,8 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 	testLesson := models.Lesson{
 		LessonName: "English",
 		TeacherName: "Smith",
-		AvgStar: 3.2,
-		AboutAvgStar: int(math.Round(3.0)),
+		AvgStar: 3.8,
+		AboutAvgStar: int(math.Round(3.8)),
 		CommentNumbers: 0,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -275,8 +275,8 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 	testLesson2 := models.Lesson{
 		LessonName: "Science",
 		TeacherName: "Yamada",
-		AvgStar: 3.8,
-		AboutAvgStar: int(math.Round(4.0)),
+		AvgStar: 3.2,
+		AboutAvgStar: int(math.Round(3.2)),
 		CommentNumbers: 0,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -321,7 +321,7 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 		t.Errorf("3 all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
 	}
 
-	if lessons[0].LessonName != "Science" ||  lessons[1].LessonName != "English" || lessons[2].LessonName != "Math" {
+	if lessons[0].LessonName != "English" ||  lessons[1].LessonName != "Science" || lessons[2].LessonName != "Math" {
 		t.Errorf("wrong order 3 %s %s %s", lessons[0].LessonName, lessons[1].LessonName, lessons[2].LessonName)
 	}
 }
