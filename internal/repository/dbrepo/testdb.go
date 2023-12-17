@@ -104,6 +104,16 @@ func (m *TestDBRepo) AllLessons(how int) ([]*models.Lesson, error) {
 	return nil, errors.New("no such a way")
 }
 
+func (m *TestDBRepo) AllLessonsByUser(id int, how int) ([]*models.Lesson, error) {
+	if how == 0 || how == 1 || how == 2 || how == 3 {
+		if id == 1 || id == 2 {
+			var lessons []*models.Lesson
+			return lessons, nil
+		}
+	}
+	return nil, errors.New("no such a way or id")
+}
+
 func (m *TestDBRepo) InsertComment(comment models.Comment) (int, error) {
 	return 2, nil
 }

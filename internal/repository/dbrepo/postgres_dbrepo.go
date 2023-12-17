@@ -172,10 +172,11 @@ func (m *PostgresDBRepo) InsertLesson(lesson models.Lesson) (int, error) {
 	defer cancel()
 
 	var newID int
-	stmt := `insert into lessons (lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at)
-		values ($1, $2, $3, $4, $5, $6, $7) returning id`
+	stmt := `insert into lessons (user_id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at)
+		values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`
 
 	err := m.DB.QueryRowContext(ctx, stmt,
+		lesson.UserId,
 		lesson.LessonName,
 		lesson.TeacherName,
 		lesson.AvgStar,
@@ -198,7 +199,7 @@ func (m *PostgresDBRepo) GetLessonByID(id int) (*models.Lesson, error) {
 
 	query := `
 		select
-			id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
+			id, user_id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
 		from lessons
 		where
 		    id = $1`
@@ -208,6 +209,7 @@ func (m *PostgresDBRepo) GetLessonByID(id int) (*models.Lesson, error) {
 
 	err := row.Scan(
 		&lesson.ID,
+		&lesson.UserId,
 		&lesson.LessonName,
 		&lesson.TeacherName,
 		&lesson.AvgStar,
@@ -255,7 +257,7 @@ func (m *PostgresDBRepo) AllLessons(how int) ([]*models.Lesson, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `select id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
+	query := `select id, user_id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
 	from lessons order by %s`
 
 	if how == 1 {
@@ -280,6 +282,58 @@ func (m *PostgresDBRepo) AllLessons(how int) ([]*models.Lesson, error) {
 		var lesson models.Lesson
 		err := rows.Scan(
 			&lesson.ID,
+			&lesson.UserId,
+			&lesson.LessonName,
+			&lesson.TeacherName,
+			&lesson.AvgStar,
+			&lesson.AboutAvgStar,
+			&lesson.CommentNumbers,
+			&lesson.CreatedAt,
+			&lesson.UpdatedAt,
+		)
+		if err != nil {
+			log.Println("Error scanning", err)
+			return nil, err
+		}
+
+		lessons = append(lessons, &lesson)
+	}
+
+	return lessons, nil
+}
+
+func (m *PostgresDBRepo) AllLessonsByUser(id int, how int) ([]*models.Lesson, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `select id, user_id, lesson_name, teacher_name, avg_star, about_avg_star, comment_numbers, created_at, updated_at
+						from lessons
+						where user_id = $1
+						order by %s`
+
+	if how == 1 {
+		query = fmt.Sprintf(query, "created_at")
+	} else if how == 2 {
+		query = fmt.Sprintf(query, "created_at desc")
+	} else if how == 3 {
+		query = fmt.Sprintf(query, "about_avg_star desc")
+	} else if how == 0 {
+		query = fmt.Sprintf(query, "lesson_name")
+	}
+
+	rows, err := m.DB.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lessons []*models.Lesson
+
+	for rows.Next() {
+		var lesson models.Lesson
+		err := rows.Scan(
+			&lesson.ID,
+			&lesson.UserId,
 			&lesson.LessonName,
 			&lesson.TeacherName,
 			&lesson.AvgStar,

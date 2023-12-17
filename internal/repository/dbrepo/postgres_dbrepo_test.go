@@ -199,6 +199,7 @@ func TestPostgresDBRepoResetPassword(t *testing.T) {
 
 func TestPostgresDBRepoInsertLesson(t *testing.T) {
 	testLesson := models.Lesson{
+		UserId: 1,
 		LessonName: "Math",
 		TeacherName: "User",
 		AvgStar: 7.0,
@@ -263,6 +264,7 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 	}
 
 	testLesson := models.Lesson{
+		UserId: 1,
 		LessonName: "English",
 		TeacherName: "Smith",
 		AvgStar: 3.8,
@@ -272,7 +274,21 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
+	testUser := models.User{
+		FirstName: "Yamamoto",
+		LastName: "Futo",
+		Email: "yamamoto@example.com",
+		Password: "secret",
+		Image: "test",
+		IsAdmin: 1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertUser(testUser)
+
 	testLesson2 := models.Lesson{
+		UserId: 2,
 		LessonName: "Science",
 		TeacherName: "Yamada",
 		AvgStar: 3.2,
@@ -322,6 +338,95 @@ func TestPostgresDBRepoAllLessons(t *testing.T) {
 	}
 
 	if lessons[0].LessonName != "English" ||  lessons[1].LessonName != "Science" || lessons[2].LessonName != "Math" {
+		t.Errorf("wrong order 3 %s %s %s", lessons[0].LessonName, lessons[1].LessonName, lessons[2].LessonName)
+	}
+}
+
+func TestPostgresDBRepoAllLessonsByUser(t *testing.T) {
+	lessons, err := testRepo.AllLessonsByUser(1, 0)
+	if err != nil {
+		t.Errorf("0 all lessons reports an error: %s", err)
+	}
+
+	if len(lessons) != 2 {
+		t.Errorf("0 all lessons reports wrong size; expected 1, but got %d", len(lessons))
+	}
+
+	testLesson := models.Lesson{
+		UserId: 2,
+		LessonName: "English",
+		TeacherName: "Smith",
+		AvgStar: 3.8,
+		AboutAvgStar: int(math.Round(3.8)),
+		CommentNumbers: 0,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	testUser := models.User{
+		FirstName: "Yamamoto",
+		LastName: "Futo",
+		Email: "yamamoto@example.com",
+		Password: "secret",
+		Image: "test",
+		IsAdmin: 1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertUser(testUser)
+
+	testLesson2 := models.Lesson{
+		UserId: 2,
+		LessonName: "PE",
+		TeacherName: "Yamada",
+		AvgStar: 2,
+		AboutAvgStar: int(math.Round(2)),
+		CommentNumbers: 0,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertLesson(testLesson)
+
+	_, _ = testRepo.InsertLesson(testLesson2)
+
+	lessons, err = testRepo.AllLessonsByUser(2, 1)
+	if err != nil {
+		t.Errorf("1 all lessons reports an error: %s", err)
+	}
+
+	if len(lessons) != 3 {
+		t.Errorf("1 all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
+	}
+
+	if lessons[0].LessonName != "Science" ||  lessons[1].LessonName != "English" || lessons[2].LessonName != "PE" {
+		t.Errorf("wrong order 1")
+	}
+
+	lessons, err = testRepo.AllLessonsByUser(2, 2)
+	if err != nil {
+		t.Errorf("2 all lessons reports an error: %s", err)
+	}
+
+	if len(lessons) != 3 {
+		t.Errorf("2 all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
+	}
+
+	if lessons[0].LessonName != "PE" ||  lessons[1].LessonName != "English" || lessons[2].LessonName != "Science" {
+		t.Errorf("wrong order 2")
+	}
+
+	lessons, err = testRepo.AllLessonsByUser(2, 3)
+	if err != nil {
+		t.Errorf("3 all lessons reports an error: %s", err)
+	}
+
+	if len(lessons) != 3 {
+		t.Errorf("3 all lessons reports wrong size after insert; expected 2, but got %d", len(lessons))
+	}
+
+	if lessons[0].LessonName != "English" ||  lessons[1].LessonName != "Science" || lessons[2].LessonName != "PE" {
 		t.Errorf("wrong order 3 %s %s %s", lessons[0].LessonName, lessons[1].LessonName, lessons[2].LessonName)
 	}
 }

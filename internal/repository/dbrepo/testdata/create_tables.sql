@@ -34,6 +34,7 @@ ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 CREATE TABLE public.lessons (
     id integer NOT NULL,
+    user_id integer,
     lesson_name character varying(255),
     teacher_name character varying(255),
     avg_star float,
@@ -120,6 +121,13 @@ ALTER TABLE ONLY public.comments
 
 ALTER TABLE ONLY public.comments
     ADD CONSTRAINT comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+--
+-- Name: lessons lessons_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lessons
+    ADD CONSTRAINT lessons_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 --
 -- PostgreSQL database dump complete

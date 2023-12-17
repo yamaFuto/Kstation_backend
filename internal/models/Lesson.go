@@ -4,6 +4,7 @@ import "time"
 
 type Lesson struct {
 	ID             int       `json:"id"`
+	UserId				 int       `json:"user_id"`
 	LessonName     string    `json:"lesson_name"`
 	TeacherName    string    `json:"teacher_name"`
 	AvgStar        float32   `json:"avg_star"`
