@@ -82,6 +82,7 @@ func (m *TestDBRepo) GetLessonByID(id int) (*models.Lesson, error) {
 	if id == 1 {
 		lesson := models.Lesson{
 			ID: 1,
+			UserId: 1,
 			LessonName: "Math",
 			TeacherName: "Yamada",
 			AvgStar: 0.0,

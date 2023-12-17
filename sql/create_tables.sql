@@ -144,7 +144,7 @@ ALTER TABLE ONLY public.comments
     ADD CONSTRAINT comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 --
--- Name: comments lessons_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: lessons lessons_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.lessons

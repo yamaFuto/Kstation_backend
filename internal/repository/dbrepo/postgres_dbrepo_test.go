@@ -352,7 +352,7 @@ func TestPostgresDBRepoAllLessonsByUser(t *testing.T) {
 		t.Errorf("0 all lessons reports wrong size; expected 1, but got %d", len(lessons))
 	}
 
-	testLesson := models.Lesson{
+	testLesson3 := models.Lesson{
 		UserId: 2,
 		LessonName: "English",
 		TeacherName: "Smith",
@@ -376,7 +376,7 @@ func TestPostgresDBRepoAllLessonsByUser(t *testing.T) {
 
 	_, _ = testRepo.InsertUser(testUser)
 
-	testLesson2 := models.Lesson{
+	testLesson4 := models.Lesson{
 		UserId: 2,
 		LessonName: "PE",
 		TeacherName: "Yamada",
@@ -387,9 +387,26 @@ func TestPostgresDBRepoAllLessonsByUser(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
-	_, _ = testRepo.InsertLesson(testLesson)
+	testLesson5 := models.Lesson{
+		UserId: 5,
+		LessonName: "PE",
+		TeacherName: "Yamada",
+		AvgStar: 2,
+		AboutAvgStar: int(math.Round(2)),
+		CommentNumbers: 0,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 
-	_, _ = testRepo.InsertLesson(testLesson2)
+	_, _ = testRepo.InsertLesson(testLesson3)
+
+	_, _ = testRepo.InsertLesson(testLesson4)
+
+	_, err = testRepo.InsertLesson(testLesson5)
+
+	if err == nil {
+		t.Error("foreign key not functioned", err)
+	}
 
 	lessons, err = testRepo.AllLessonsByUser(2, 1)
 	if err != nil {
